@@ -36,12 +36,39 @@ class CPU {
       case 0x0e: unimplementedInstruction(); break;
       case 0x0f: unimplementedInstruction(); break;
       /* */
-      case 0x80:
+      case 0x80: //ADD B
         int answer = state.a + state.b;
-
-        if(answer == 0) {
-
-        }
+        state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
+        state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
+        state.cc.cy = (answer > 0xff) ? 1 : 0;
+        state.cc.p = parity(answer & 0xff,8);
+        state.a = answer & 0xff;
+        break;
+      case 0x81: //ADD C
+        int answer = state.a + state.c;
+        state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
+        state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
+        state.cc.cy = (answer > 0xff) ? 1 : 0;
+        state.cc.p = parity(answer & 0xff,8);
+        state.a = answer & 0xff;
+        break;
+      case 0xC6: //ADI byte
+        int answer = state.a + state.memory[state.pc+1];
+        state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
+        state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
+        state.cc.cy = (answer > 0xff) ? 1 : 0;
+        state.cc.p = parity(answer & 0xff,8);
+        state.a = answer & 0xff;
+        break;
+      case 0x86: //ADD M
+        int offset = (state.h<<8) | (state.l);
+        int answer = state.a + state.memory[offset];
+        state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
+        state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
+        state.cc.cy = (answer > 0xff) ? 1 : 0;
+        state.cc.p = parity(answer & 0xff,8);
+        state.a = answer & 0xff;
+        break;
     }
 
     state.pc += 1;
