@@ -12,13 +12,13 @@ class CPU {
   }
 
   int emulate8080Op() {
-    Uint8List opcode = state.memory.getRange(state.pc, state.pc+3);
+    int opcode = state.memory[state.pc];
 
-    switch(opcode[0]) {
+    switch(opcode) {
       case 0x00: break;
       case 0x01:
-        state.c = opcode[1];
-        state.b = opcode[2];
+        state.c = state.memory[state.pc+1];
+        state.b = state.memory[state.pc+2];
         state.pc += 2;
         break;
       case 0x02: unimplementedInstruction(); break;
@@ -35,6 +35,13 @@ class CPU {
       case 0x0d: unimplementedInstruction(); break;
       case 0x0e: unimplementedInstruction(); break;
       case 0x0f: unimplementedInstruction(); break;
+      /* */
+      case 0x80:
+        int answer = state.a + state.b;
+
+        if(answer == 0) {
+
+        }
     }
 
     state.pc += 1;
