@@ -34,8 +34,16 @@ class CPU {
       case 0x0c: unimplementedInstruction(); break;
       case 0x0d: unimplementedInstruction(); break;
       case 0x0e: unimplementedInstruction(); break;
-      case 0x0f: unimplementedInstruction(); break;
-      /* */
+      case 0x0f: //RRC
+        int x = state.a;
+        state.a = ((x & 1) << 7) | (x >> 1);
+        state.cc.cy = (1 == (x & 1)) ? 1 : 0;
+        break;
+      case 0x1f: //RAR
+        int x = state.a;
+        state.a = (state.cc.cy << 7) | (x >> 1);
+        state.cc.cy = (1 == (x & 1)) ? 1 : 0;
+        break;
       case 0x2f: //CMA (not)
         state.a = ~state.a;
         break;
@@ -64,11 +72,21 @@ class CPU {
         state.cc.p = parity(answer & 0xff,8);
         state.a = answer & 0xff;
         break;
+      case 0xc1: //POP B
+        state.c = state.memory[state.sp];
+        state.b = state.memory[state.sp+1];
+        state.sp += 2;
+        break;
       case 0xc2: //JNZ address
         state.pc = (0 == state.cc.z) ? (state.memory[state.pc+2] << 8) | state.memory[state.pc+1] : state.pc + 2;
         break;
       case 0xc3: //JMP address
         state.pc = (state.memory[state.pc+2] << 8) | state.memory[state.pc+1];
+        break;
+      case 0xc5: //PUSH B
+        state.memory[state.sp-1] = state.b;
+        state.memory[state.sp-2] = state.c;
+        state.sp = state.sp - 2;
         break;
       case 0xc6: //ADI byte
         int answer = state.a + state.memory[state.pc+1];
@@ -98,9 +116,45 @@ class CPU {
         state.cc.p = parity(answer & 0xff,8);
         state.a = answer & 0xff;
         break;
+      case 0xf1: //POP PSW
+        state.a = state.memory[state.sp+1];
+        int psw = state.memory[state.sp];
+        state.cc.z = (0x01 == (psw & 0x01)) ? 1 : 0;
+        state.cc.s = (0x02 == (psw & 0x02)) ? 1 : 0;
+        state.cc.p = (0x04 == (psw & 0x04)) ? 1 : 0;
+        state.cc.cy = (0x05 == (psw & 0x08)) ? 1 : 0;
+        state.cc.ac = (0x10 == (psw & 0x10)) ? 1 : 0;
+        state.sp += 2;
+        break;
+      case 0xf5: //PUSH PSW
+        state.memory[state.sp-1] = state.a;
+        int psw = (state.cc.z | state.cc.s << 1 | state.cc.p << 2 | state.cc.cy << 3 | state.cc.ac << 4);
+        state.memory[state.sp-2] = psw;
+        state.sp = state.sp - 2;
+        break;
+      case 0xfe: //CPI byte
+        int x = state.a - state.memory[state.pc+1];
+        state.cc.z = (x == 0) ? 1 : 0;
+        state.cc.s = (0x80 == (x & 0x80)) ? 1 : 0;
+        state.cc.p = parity(x, 8);
+        state.cc.cy = (state.a < state.memory[state.pc+1]) ? 1 : 0;
+        state.pc++;
+        break;
     }
 
     state.pc += 1;
+  }
+
+  int parity(int x, int size) {
+    int i;
+    int p = 0;
+    x = (x & ((1 << size)-1));
+    for(i=0; i<size; i++) {
+      if((x & 0x1) != 0)
+        p++;
+      x = x >> 1;
+    }
+    return (0 == (p & 0x1)) ? 1 : 0;
   }
 
   void run() {
