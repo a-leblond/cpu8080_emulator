@@ -157,6 +157,20 @@ class CPU {
     return (0 == (p & 0x1)) ? 1 : 0;
   }
 
+  void logicFlagsA() {
+    state.cc.cy = state.cc.ac = 0;
+    state.cc.z = (state.a == 0) ? 1 : 0;
+    state.cc.s = (0x80 == (state.a & 0x80)) ? 1 : 0;
+    state.cc.p = parity(state.a, 8);
+  }
+
+  void arithFlagsA(int res){
+    state.cc.cy = (res > 0xff) ? 1 : 0;
+    state.cc.z = ((res&0xff) == 0) ? 1 : 0;
+    state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
+    state.cc.p = parity(res&0xff, 8);
+  }
+
   void run() {
 
   }
@@ -164,5 +178,7 @@ class CPU {
   void loadROM() {
 
   }
+
+
 
 }
