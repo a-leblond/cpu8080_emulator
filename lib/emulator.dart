@@ -16,6 +16,8 @@ class _EmulatorState extends State<Emulator> {
 
   //TODO: Generalize to any rom
   void _initCPU() async {
+    _cpu.init8080();
+
     _cpu.readFileIntoMemoryAt("invaders.h", 0);
     _cpu.readFileIntoMemoryAt("invaders.g", 0x800);
     _cpu.readFileIntoMemoryAt("invaders.f", 0x1000);

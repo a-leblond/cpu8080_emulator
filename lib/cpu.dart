@@ -1,11 +1,17 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'state.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class CPU {
 
   State state = new State();
+
+  void init8080() {
+    state.memory = new Uint8List(0x10000);
+    state.cc = new ConditionCodes();
+  }
 
   int _parity(int x, int size) {
     int i;
