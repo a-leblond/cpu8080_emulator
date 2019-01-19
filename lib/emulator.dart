@@ -18,15 +18,17 @@ class _EmulatorState extends State<Emulator> {
   void _initCPU() async {
     _cpu.init8080();
 
-    _cpu.readFileIntoMemoryAt("invaders.h", 0);
-    _cpu.readFileIntoMemoryAt("invaders.g", 0x800);
-    _cpu.readFileIntoMemoryAt("invaders.f", 0x1000);
-    _cpu.readFileIntoMemoryAt("invaders.e", 0x1800);
+    await _cpu.readFileIntoMemoryAt("invaders.h", 0);
+    await _cpu.readFileIntoMemoryAt("invaders.g", 0x800);
+    await _cpu.readFileIntoMemoryAt("invaders.f", 0x1000);
+    await _cpu.readFileIntoMemoryAt("invaders.e", 0x1800);
 
     _runCPU();
   }
 
   void _runCPU() {
+    print("RunCPU");
+
     int done = 0;
     while(done == 0) {
       done = _cpu.emulate8080Op();

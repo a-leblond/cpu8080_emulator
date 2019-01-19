@@ -11,6 +11,7 @@ class CPU {
   void init8080() {
     state.memory = new Uint8List(0x10000);
     state.cc = new ConditionCodes();
+    state.a = state.b = state.c = state.d = state.e = state.h = state.l = state.pc = state.intEnable = 0;
   }
 
   int _parity(int x, int size) {
@@ -40,8 +41,10 @@ class CPU {
   }
 
   void readFileIntoMemoryAt(String filename, int offset) async {
+    print("Reading file "+filename);
     ByteData content = await rootBundle.load('assets/rom/'+filename);
     Uint8List bytes = content.buffer.asUint8List();
+    print("Bytes length : "+bytes.length.toString());
     for(int i=0; i<bytes.length; i++) {
       state.memory[offset + i] = bytes[i];
     }
@@ -54,6 +57,7 @@ class CPU {
 
   int emulate8080Op() {
     int opcode = state.memory[state.pc];
+    print(opcode.toRadixString(16));
 
     switch(opcode) {
       case 0x00: break;
