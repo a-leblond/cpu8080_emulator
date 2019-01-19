@@ -7,7 +7,7 @@ class CPU {
 
   State state = new State();
 
-  int parity(int x, int size) {
+  int _parity(int x, int size) {
     int i;
     int p = 0;
     x = (x & ((1 << size)-1));
@@ -19,18 +19,18 @@ class CPU {
     return (0 == (p & 0x1)) ? 1 : 0;
   }
 
-  void logicFlagsA() {
+  void _logicFlagsA() {
     state.cc.cy = state.cc.ac = 0;
     state.cc.z = (state.a == 0) ? 1 : 0;
     state.cc.s = (0x80 == (state.a & 0x80)) ? 1 : 0;
-    state.cc.p = parity(state.a, 8);
+    state.cc.p = _parity(state.a, 8);
   }
 
-  void arithFlagsA(int res){
+  void _arithFlagsA(int res){
     state.cc.cy = (res > 0xff) ? 1 : 0;
     state.cc.z = ((res&0xff) == 0) ? 1 : 0;
     state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
-    state.cc.p = parity(res&0xff, 8);
+    state.cc.p = _parity(res&0xff, 8);
   }
 
   void run() {
@@ -45,7 +45,7 @@ class CPU {
     }
   }
 
-  void unimplementedInstruction() {
+  void _unimplementedInstruction() {
     print("Error: Unimplemented instruction");
     exit(1);
   }
@@ -60,19 +60,19 @@ class CPU {
         state.b = state.memory[state.pc+2];
         state.pc += 2;
         break;
-      case 0x02: unimplementedInstruction(); break;
-      case 0x03: unimplementedInstruction(); break;
-      case 0x04: unimplementedInstruction(); break;
-      case 0x05: unimplementedInstruction(); break;
-      case 0x06: unimplementedInstruction(); break;
-      case 0x07: unimplementedInstruction(); break;
-      case 0x08: unimplementedInstruction(); break;
-      case 0x09: unimplementedInstruction(); break;
-      case 0x0a: unimplementedInstruction(); break;
-      case 0x0b: unimplementedInstruction(); break;
-      case 0x0c: unimplementedInstruction(); break;
-      case 0x0d: unimplementedInstruction(); break;
-      case 0x0e: unimplementedInstruction(); break;
+      case 0x02: _unimplementedInstruction(); break;
+      case 0x03: _unimplementedInstruction(); break;
+      case 0x04: _unimplementedInstruction(); break;
+      case 0x05: _unimplementedInstruction(); break;
+      case 0x06: _unimplementedInstruction(); break;
+      case 0x07: _unimplementedInstruction(); break;
+      case 0x08: _unimplementedInstruction(); break;
+      case 0x09: _unimplementedInstruction(); break;
+      case 0x0a: _unimplementedInstruction(); break;
+      case 0x0b: _unimplementedInstruction(); break;
+      case 0x0c: _unimplementedInstruction(); break;
+      case 0x0d: _unimplementedInstruction(); break;
+      case 0x0e: _unimplementedInstruction(); break;
       case 0x0f: //RRC
         int x = state.a;
         state.a = ((x & 1) << 7) | (x >> 1);
@@ -90,7 +90,7 @@ class CPU {
         int x = state.a & state.memory[state.pc+1];
         state.cc.z = (x == 0) ? 1 : 0;
         state.cc.s = (0x80 == (x & 0x80)) ? 1 : 0;
-        state.cc.p = parity(x, 8);
+        state.cc.p = _parity(x, 8);
         state.cc.cy = 0;
         state.a = x;
         state.pc++;
@@ -100,7 +100,7 @@ class CPU {
         state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
         state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
         state.cc.cy = (answer > 0xff) ? 1 : 0;
-        state.cc.p = parity(answer & 0xff,8);
+        state.cc.p = _parity(answer & 0xff,8);
         state.a = answer & 0xff;
         break;
       case 0x81: //ADD C
@@ -108,7 +108,7 @@ class CPU {
         state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
         state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
         state.cc.cy = (answer > 0xff) ? 1 : 0;
-        state.cc.p = parity(answer & 0xff,8);
+        state.cc.p = _parity(answer & 0xff,8);
         state.a = answer & 0xff;
         break;
       case 0xc1: //POP B
@@ -132,7 +132,7 @@ class CPU {
         state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
         state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
         state.cc.cy = (answer > 0xff) ? 1 : 0;
-        state.cc.p = parity(answer & 0xff,8);
+        state.cc.p = _parity(answer & 0xff,8);
         state.a = answer & 0xff;
         break;
       case 0xc9:
@@ -152,7 +152,7 @@ class CPU {
         state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
         state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
         state.cc.cy = (answer > 0xff) ? 1 : 0;
-        state.cc.p = parity(answer & 0xff,8);
+        state.cc.p = _parity(answer & 0xff,8);
         state.a = answer & 0xff;
         break;
       case 0xf1: //POP PSW
@@ -175,13 +175,15 @@ class CPU {
         int x = state.a - state.memory[state.pc+1];
         state.cc.z = (x == 0) ? 1 : 0;
         state.cc.s = (0x80 == (x & 0x80)) ? 1 : 0;
-        state.cc.p = parity(x, 8);
+        state.cc.p = _parity(x, 8);
         state.cc.cy = (state.a < state.memory[state.pc+1]) ? 1 : 0;
         state.pc++;
         break;
     }
 
     state.pc += 1;
+
+    return 0;
   }
 
 
