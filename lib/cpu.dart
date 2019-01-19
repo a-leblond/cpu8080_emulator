@@ -39,15 +39,11 @@ class CPU {
     state.cc.p = _parity(res&0xff, 8);
   }
 
-  void run() {
-
-  }
-
   void readFileIntoMemoryAt(String filename, int offset) async {
-    String content = await rootBundle.loadString('assets/'+filename);
-    List<int> byteContent = utf8.encode(content);
-    for(int i=0; i<byteContent.length; i++) {
-      state.memory[offset + i] = byteContent[i];
+    ByteData content = await rootBundle.load('assets/rom/'+filename);
+    Uint8List bytes = content.buffer.asUint8List();
+    for(int i=0; i<bytes.length; i++) {
+      state.memory[offset + i] = bytes[i];
     }
   }
 
