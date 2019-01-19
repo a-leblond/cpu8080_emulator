@@ -1,10 +1,49 @@
 import 'dart:io';
-import 'dart:typed_data';
+import 'dart:convert';
 import 'state.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class CPU {
 
   State state = new State();
+
+  int parity(int x, int size) {
+    int i;
+    int p = 0;
+    x = (x & ((1 << size)-1));
+    for(i=0; i<size; i++) {
+      if((x & 0x1) != 0)
+        p++;
+      x = x >> 1;
+    }
+    return (0 == (p & 0x1)) ? 1 : 0;
+  }
+
+  void logicFlagsA() {
+    state.cc.cy = state.cc.ac = 0;
+    state.cc.z = (state.a == 0) ? 1 : 0;
+    state.cc.s = (0x80 == (state.a & 0x80)) ? 1 : 0;
+    state.cc.p = parity(state.a, 8);
+  }
+
+  void arithFlagsA(int res){
+    state.cc.cy = (res > 0xff) ? 1 : 0;
+    state.cc.z = ((res&0xff) == 0) ? 1 : 0;
+    state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
+    state.cc.p = parity(res&0xff, 8);
+  }
+
+  void run() {
+
+  }
+
+  void readFileIntoMemoryAt(String filename, int offset) async {
+    String content = await rootBundle.loadString('assets/'+filename);
+    List<int> byteContent = utf8.encode(content);
+    for(int i=0; i<byteContent.length; i++) {
+      state.memory[offset + i] = byteContent[i];
+    }
+  }
 
   void unimplementedInstruction() {
     print("Error: Unimplemented instruction");
@@ -143,40 +182,6 @@ class CPU {
     }
 
     state.pc += 1;
-  }
-
-  int parity(int x, int size) {
-    int i;
-    int p = 0;
-    x = (x & ((1 << size)-1));
-    for(i=0; i<size; i++) {
-      if((x & 0x1) != 0)
-        p++;
-      x = x >> 1;
-    }
-    return (0 == (p & 0x1)) ? 1 : 0;
-  }
-
-  void logicFlagsA() {
-    state.cc.cy = state.cc.ac = 0;
-    state.cc.z = (state.a == 0) ? 1 : 0;
-    state.cc.s = (0x80 == (state.a & 0x80)) ? 1 : 0;
-    state.cc.p = parity(state.a, 8);
-  }
-
-  void arithFlagsA(int res){
-    state.cc.cy = (res > 0xff) ? 1 : 0;
-    state.cc.z = ((res&0xff) == 0) ? 1 : 0;
-    state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
-    state.cc.p = parity(res&0xff, 8);
-  }
-
-  void run() {
-
-  }
-
-  void loadROM() {
-
   }
 
 
