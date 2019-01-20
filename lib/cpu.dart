@@ -60,8 +60,8 @@ class CPU {
     print(opcode.toRadixString(16));
 
     switch(opcode) {
-      case 0x00: break;
-      case 0x01:
+      case 0x00: break; //NOP
+      case 0x01: //LXI B,word
         state.c = state.memory[state.pc+1];
         state.b = state.memory[state.pc+2];
         state.pc += 2;
@@ -69,26 +69,86 @@ class CPU {
       case 0x02: _unimplementedInstruction(); break;
       case 0x03: _unimplementedInstruction(); break;
       case 0x04: _unimplementedInstruction(); break;
-      case 0x05: _unimplementedInstruction(); break;
-      case 0x06: _unimplementedInstruction(); break;
+      case 0x05: //DCR B
+        int res = state.b - 1;
+        state.cc.z = (res == 0) ? 1 : 0;
+        state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
+        state.cc.p = _parity(res, 8);
+        state.b = res;
+        break;
+      case 0x06: //MVI B,byte
+        state.b = state.memory[state.pc+1];
+        state.pc++;
+        break;
       case 0x07: _unimplementedInstruction(); break;
       case 0x08: _unimplementedInstruction(); break;
-      case 0x09: _unimplementedInstruction(); break;
+      case 0x09: //DAD B
+        int hl = (state.h << 8) | state.l;
+        int bc = (state.b << 8) | state.c;
+        int res = hl + bc;
+        state.h = (res & 0xff00) >> 8;
+        state.l = res & 0xff;
+        state.cc.cy = ((res & 0xffff0000) > 0) ? 1 : 0;
+        break;
       case 0x0a: _unimplementedInstruction(); break;
       case 0x0b: _unimplementedInstruction(); break;
       case 0x0c: _unimplementedInstruction(); break;
-      case 0x0d: _unimplementedInstruction(); break;
-      case 0x0e: _unimplementedInstruction(); break;
+      case 0x0d: //DCR C
+        int res = state.c - 1;
+        state.cc.z = (res == 0) ? 1 : 0;
+        state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
+        state.cc.p = _parity(res, 8);
+        state.c = res;
+        break;
+      case 0x0e: //MVI C,byte
+        state.c = state.memory[state.pc+1];
+        state.pc++;
+        break;
       case 0x0f: //RRC
         int x = state.a;
         state.a = ((x & 1) << 7) | (x >> 1);
         state.cc.cy = (1 == (x & 1)) ? 1 : 0;
         break;
+      case 0x10: _unimplementedInstruction(); break;
+      case 0x11: //LXI D,word
+        state.e = state.memory[state.pc+1];
+        state.d = state.memory[state.pc+2];
+        state.pc += 2;
+        break;
+      case 0x12: _unimplementedInstruction(); break;
+      case 0x13: //INX D
+        state.e++;
+        if(state.e == 0) {
+          state.d++;
+        }
+        break;
+      case 0x14: _unimplementedInstruction(); break;
+      case 0x15: _unimplementedInstruction(); break;
+      case 0x16: _unimplementedInstruction(); break;
+      case 0x17: _unimplementedInstruction(); break;
+      case 0x18: _unimplementedInstruction(); break;
+      case 0x19: //DAD D
+        int hl = (state.h << 8) | state.l;
+        int de = (state.d << 8) | state.e;
+        int res = hl + de;
+        state.h = (res & 0xff00) >> 8;
+        state.l = res & 0xff;
+        state.cc.cy = ((res & 0xffff0000) != 0) ? 1 : 0;
+        break;
+      case 0x1a: //LDAX D
+        int offset = (state.d << 8) | state.e;
+        state.a = state.memory[offset];
+        break;
+      case 0x1b: _unimplementedInstruction(); break;
+      case 0x1c: _unimplementedInstruction(); break;
+      case 0x1d: _unimplementedInstruction(); break;
+      case 0x1e: _unimplementedInstruction(); break;
       case 0x1f: //RAR
         int x = state.a;
         state.a = (state.cc.cy << 7) | (x >> 1);
         state.cc.cy = (1 == (x & 1)) ? 1 : 0;
         break;
+      case 0x20: _unimplementedInstruction(); break;
       case 0x2f: //CMA (not)
         state.a = ~state.a;
         break;
