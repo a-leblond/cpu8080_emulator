@@ -11,7 +11,7 @@ class CPU {
   void init8080() {
     state.memory = new Uint8List(0x10000);
     state.cc = new ConditionCodes();
-    state.a = state.b = state.c = state.d = state.e = state.h = state.l = state.pc = state.intEnable = 0;
+    state.a = state.b = state.c = state.d = state.e = state.h = state.l = state.pc = state.sp = state.intEnable = 0;
   }
 
   int _parity(int x, int size) {
@@ -149,6 +149,16 @@ class CPU {
         state.cc.cy = (1 == (x & 1)) ? 1 : 0;
         break;
       case 0x20: _unimplementedInstruction(); break;
+      case 0x21: _unimplementedInstruction(); break;
+      case 0x22: _unimplementedInstruction(); break;
+      case 0x23: _unimplementedInstruction(); break;
+      case 0x24: //INR H
+        int res = state.h + 1;
+        state.cc.z = (res == 0) ? 1 : 0;
+        state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
+        state.cc.p = _parity(res, 8);
+        state.h = res;
+        break;
       case 0x2f: //CMA (not)
         state.a = ~state.a;
         break;
