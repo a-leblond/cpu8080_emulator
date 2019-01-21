@@ -57,13 +57,16 @@ class CPU {
 
   int emulate8080Op() {
     int opcode = state.memory[state.pc];
+    int currentPc = state.pc;
     print(opcode.toRadixString(16));
+
+    state.pc += 1;
 
     switch(opcode) {
       case 0x00: break; //NOP
       case 0x01: //LXI B,word
-        state.c = state.memory[state.pc+1];
-        state.b = state.memory[state.pc+2];
+        state.c = state.memory[currentPc+1];
+        state.b = state.memory[currentPc+2];
         state.pc += 2;
         break;
       case 0x02: _unimplementedInstruction(); break;
@@ -77,7 +80,7 @@ class CPU {
         state.b = res;
         break;
       case 0x06: //MVI B,byte
-        state.b = state.memory[state.pc+1];
+        state.b = state.memory[currentPc+1];
         state.pc++;
         break;
       case 0x07: _unimplementedInstruction(); break;
@@ -101,7 +104,7 @@ class CPU {
         state.c = res;
         break;
       case 0x0e: //MVI C,byte
-        state.c = state.memory[state.pc+1];
+        state.c = state.memory[currentPc+1];
         state.pc++;
         break;
       case 0x0f: //RRC
@@ -111,8 +114,8 @@ class CPU {
         break;
       case 0x10: _unimplementedInstruction(); break;
       case 0x11: //LXI D,word
-        state.e = state.memory[state.pc+1];
-        state.d = state.memory[state.pc+2];
+        state.e = state.memory[currentPc+1];
+        state.d = state.memory[currentPc+2];
         state.pc += 2;
         break;
       case 0x12: _unimplementedInstruction(); break;
@@ -163,7 +166,7 @@ class CPU {
         state.a = ~state.a;
         break;
       case 0xe6: //ANI byte
-        int x = state.a & state.memory[state.pc+1];
+        int x = state.a & state.memory[currentPc+1];
         state.cc.z = (x == 0) ? 1 : 0;
         state.cc.s = (0x80 == (x & 0x80)) ? 1 : 0;
         state.cc.p = _parity(x, 8);
@@ -193,10 +196,10 @@ class CPU {
         state.sp += 2;
         break;
       case 0xc2: //JNZ address
-        state.pc = (0 == state.cc.z) ? (state.memory[state.pc+2] << 8) | state.memory[state.pc+1] : state.pc + 2;
+        state.pc = (0 == state.cc.z) ? (state.memory[currentPc+2] << 8) | state.memory[currentPc+1] : state.pc + 2;
         break;
       case 0xc3: //JMP address
-        state.pc = (state.memory[state.pc+2] << 8) | state.memory[state.pc+1];
+        state.pc = (state.memory[currentPc+2] << 8) | state.memory[currentPc+1];
         break;
       case 0xc5: //PUSH B
         state.memory[state.sp-1] = state.b;
@@ -204,23 +207,23 @@ class CPU {
         state.sp = state.sp - 2;
         break;
       case 0xc6: //ADI byte
-        int answer = state.a + state.memory[state.pc+1];
+        int answer = state.a + state.memory[currentPc+1];
         state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
         state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
         state.cc.cy = (answer > 0xff) ? 1 : 0;
         state.cc.p = _parity(answer & 0xff,8);
         state.a = answer & 0xff;
         break;
-      case 0xc9:
+      case 0xc9: //RET
         state.pc = state.memory[state.sp] | (state.memory[state.sp+1] << 8);
         state.sp += 2;
         break;
-      case 0xcd:
+      case 0xcd: //CALL adr
         int ret = state.pc+2;
         state.memory[state.sp-1] = (ret >> 8) & 0xff;
         state.memory[state.sp-2] = (ret & 0xff);
         state.sp = state.sp - 2;
-        state.pc = (state.memory[state.pc+2] << 8) | state.memory[state.pc+1];
+        state.pc = (state.memory[currentPc+2] << 8) | state.memory[currentPc+1];
         break;
       case 0x86: //ADD M
         int offset = (state.h<<8) | (state.l);
@@ -248,16 +251,14 @@ class CPU {
         state.sp = state.sp - 2;
         break;
       case 0xfe: //CPI byte
-        int x = state.a - state.memory[state.pc+1];
+        int x = state.a - state.memory[currentPc+1];
         state.cc.z = (x == 0) ? 1 : 0;
         state.cc.s = (0x80 == (x & 0x80)) ? 1 : 0;
         state.cc.p = _parity(x, 8);
-        state.cc.cy = (state.a < state.memory[state.pc+1]) ? 1 : 0;
+        state.cc.cy = (state.a < state.memory[currentPc+1]) ? 1 : 0;
         state.pc++;
         break;
     }
-
-    state.pc += 1;
 
     return 0;
   }
