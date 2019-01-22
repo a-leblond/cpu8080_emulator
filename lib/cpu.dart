@@ -55,6 +55,7 @@ class CPU {
     exit(1);
   }
 
+  //TODO: INX op will probably need a fix
   int emulate8080Op() {
     int opcode = state.memory[state.pc];
     int currentPc = state.pc;
@@ -152,9 +153,18 @@ class CPU {
         state.cc.cy = (1 == (x & 1)) ? 1 : 0;
         break;
       case 0x20: _unimplementedInstruction(); break;
-      case 0x21: _unimplementedInstruction(); break;
+      case 0x21: //LXI H,word
+        state.l = state.memory[currentPc+1];
+        state.h = state.memory[currentPc+2];
+        state.pc += 2;
+        break;
       case 0x22: _unimplementedInstruction(); break;
-      case 0x23: _unimplementedInstruction(); break;
+      case 0x23: //INX H
+        state.l++;
+        if(state.l == 0) {
+          state.h++;
+        }
+        break;
       case 0x24: //INR H
         int res = state.h + 1;
         state.cc.z = (res == 0) ? 1 : 0;
@@ -162,9 +172,84 @@ class CPU {
         state.cc.p = _parity(res, 8);
         state.h = res;
         break;
+      case 0x25: _unimplementedInstruction(); break;
+      case 0x26: //MVI H,byte
+        state.h = state.memory[currentPc+1];
+        state.pc++;
+        break;
+      case 0x27: _unimplementedInstruction(); break;
+      case 0x28: _unimplementedInstruction(); break;
+      case 0x29: //DAD H
+        int hl = (state.h << 8) | state.l;
+        int res = hl + hl;
+        state.h = (res & 0xff00) >> 8;
+        state.l = res & 0xff;
+        state.cc.cy = ((res & 0xffff0000) != 0) ? 1 : 0;
+        break;
+      case 0x2a: _unimplementedInstruction(); break;
+      case 0x2b: _unimplementedInstruction(); break;
+      case 0x2c: _unimplementedInstruction(); break;
+      case 0x2d: _unimplementedInstruction(); break;
+      case 0x2e: _unimplementedInstruction(); break;
       case 0x2f: //CMA (not)
         state.a = ~state.a;
         break;
+      case 0x30: _unimplementedInstruction(); break;
+      case 0x31: //LXI SP,word
+        state.sp = (state.memory[currentPc+2] << 8) | state.memory[currentPc+1];
+        state.pc += 2;
+        break;
+      case 0x32: //STA word
+        int offset = (state.memory[currentPc+2] << 8) | state.memory[currentPc+1];
+        state.memory[offset] = state.a;
+        state.pc += 2;
+        break;
+      case 0x33: _unimplementedInstruction(); break;
+      case 0x34: _unimplementedInstruction(); break;
+      case 0x35: _unimplementedInstruction(); break;
+      case 0x36: //MVI M,byte
+        int offset = (state.h << 8) | state.l;
+        state.memory[offset] = state.memory[currentPc+1];
+        state.pc++;
+        break;
+      case 0x37: _unimplementedInstruction(); break;
+      case 0x38: _unimplementedInstruction(); break;
+      case 0x39: _unimplementedInstruction(); break;
+      case 0x3a: //LDA (word)
+        int offset = (state.memory[currentPc+2] << 8) | state.memory[currentPc+1];
+        state.a = state.memory[offset];
+        state.pc += 2;
+        break;
+      case 0x3b: _unimplementedInstruction(); break;
+      case 0x3c: _unimplementedInstruction(); break;
+      case 0x3d: _unimplementedInstruction(); break;
+      case 0x3e: //MVI A,byte
+        state.a = state.memory[currentPc+1];
+        state.pc++;
+        break;
+      case 0x3f: _unimplementedInstruction(); break;
+      case 0x40: _unimplementedInstruction(); break;
+      case 0x41: _unimplementedInstruction(); break;
+      case 0x42: _unimplementedInstruction(); break;
+      case 0x43: _unimplementedInstruction(); break;
+      case 0x44: _unimplementedInstruction(); break;
+      case 0x45: _unimplementedInstruction(); break;
+      case 0x46: _unimplementedInstruction(); break;
+      case 0x47: _unimplementedInstruction(); break;
+      case 0x48: _unimplementedInstruction(); break;
+      case 0x49: _unimplementedInstruction(); break;
+      case 0x4a: _unimplementedInstruction(); break;
+      case 0x4b: _unimplementedInstruction(); break;
+      case 0x4c: _unimplementedInstruction(); break;
+      case 0x4d: _unimplementedInstruction(); break;
+      case 0x4e: _unimplementedInstruction(); break;
+      case 0x4f: _unimplementedInstruction(); break;
+      case 0x50: _unimplementedInstruction(); break;
+      case 0x51: _unimplementedInstruction(); break;
+      case 0x52: _unimplementedInstruction(); break;
+      case 0x53: _unimplementedInstruction(); break;
+      case 0x54: _unimplementedInstruction(); break;
+      case 0x55: _unimplementedInstruction(); break;
       case 0xe6: //ANI byte
         int x = state.a & state.memory[currentPc+1];
         state.cc.z = (x == 0) ? 1 : 0;
