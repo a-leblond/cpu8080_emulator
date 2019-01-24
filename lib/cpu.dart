@@ -385,6 +385,51 @@ class CPU {
       case 0xbd: _unimplementedInstruction(); break;
       case 0xbe: _unimplementedInstruction(); break;
       case 0xbf: _unimplementedInstruction(); break;
+      case 0xc0: _unimplementedInstruction(); break;
+      case 0xc1: //POP B
+        state.c = state.memory[state.sp];
+        state.b = state.memory[state.sp+1];
+        state.sp += 2;
+        break;
+      case 0xc2: //JNZ address
+        state.pc = (0 == state.cc.z) ? (state.memory[currentPc+2] << 8) | state.memory[currentPc+1] : state.pc + 2;
+        break;
+      case 0xc3: //JMP address
+        state.pc = (state.memory[currentPc+2] << 8) | state.memory[currentPc+1];
+        break;
+      case 0xc4: _unimplementedInstruction(); break;
+      case 0xc5: //PUSH B
+        state.memory[state.sp-1] = state.b;
+        state.memory[state.sp-2] = state.c;
+        state.sp = state.sp - 2;
+        break;
+      case 0xc6: //ADI byte
+        int answer = state.a + state.memory[currentPc+1];
+        state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
+        state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
+        state.cc.cy = (answer > 0xff) ? 1 : 0;
+        state.cc.p = _parity(answer & 0xff,8);
+        state.a = answer & 0xff;
+        state.pc++;
+        break;
+      case 0xc7: _unimplementedInstruction(); break;
+      case 0xc8: _unimplementedInstruction(); break;
+      case 0xc9: //RET
+        state.pc = state.memory[state.sp] | (state.memory[state.sp+1] << 8);
+        state.sp += 2;
+        break;
+      case 0xca: _unimplementedInstruction(); break;
+      case 0xcb: _unimplementedInstruction(); break;
+      case 0xcc: _unimplementedInstruction(); break;
+      case 0xcd: //CALL adr
+        int ret = state.pc+2;
+        state.memory[state.sp-1] = (ret >> 8) & 0xff;
+        state.memory[state.sp-2] = (ret & 0xff);
+        state.sp = state.sp - 2;
+        state.pc = (state.memory[currentPc+2] << 8) | state.memory[currentPc+1];
+        break;
+      case 0xce: _unimplementedInstruction(); break;
+      case 0xcf: _unimplementedInstruction(); break;
       case 0xe6: //ANI byte
         int x = state.a & state.memory[currentPc+1];
         state.cc.z = (x == 0) ? 1 : 0;
@@ -409,41 +454,6 @@ class CPU {
         state.cc.cy = (answer > 0xff) ? 1 : 0;
         state.cc.p = _parity(answer & 0xff,8);
         state.a = answer & 0xff;
-        break;
-      case 0xc1: //POP B
-        state.c = state.memory[state.sp];
-        state.b = state.memory[state.sp+1];
-        state.sp += 2;
-        break;
-      case 0xc2: //JNZ address
-        state.pc = (0 == state.cc.z) ? (state.memory[currentPc+2] << 8) | state.memory[currentPc+1] : state.pc + 2;
-        break;
-      case 0xc3: //JMP address
-        state.pc = (state.memory[currentPc+2] << 8) | state.memory[currentPc+1];
-        break;
-      case 0xc5: //PUSH B
-        state.memory[state.sp-1] = state.b;
-        state.memory[state.sp-2] = state.c;
-        state.sp = state.sp - 2;
-        break;
-      case 0xc6: //ADI byte
-        int answer = state.a + state.memory[currentPc+1];
-        state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
-        state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
-        state.cc.cy = (answer > 0xff) ? 1 : 0;
-        state.cc.p = _parity(answer & 0xff,8);
-        state.a = answer & 0xff;
-        break;
-      case 0xc9: //RET
-        state.pc = state.memory[state.sp] | (state.memory[state.sp+1] << 8);
-        state.sp += 2;
-        break;
-      case 0xcd: //CALL adr
-        int ret = state.pc+2;
-        state.memory[state.sp-1] = (ret >> 8) & 0xff;
-        state.memory[state.sp-2] = (ret & 0xff);
-        state.sp = state.sp - 2;
-        state.pc = (state.memory[currentPc+2] << 8) | state.memory[currentPc+1];
         break;
       case 0x86: //ADD M
         int offset = (state.h<<8) | (state.l);
