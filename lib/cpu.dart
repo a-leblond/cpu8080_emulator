@@ -430,40 +430,68 @@ class CPU {
         break;
       case 0xce: _unimplementedInstruction(); break;
       case 0xcf: _unimplementedInstruction(); break;
-      case 0xe6: //ANI byte
-        int x = state.a & state.memory[currentPc+1];
-        state.cc.z = (x == 0) ? 1 : 0;
-        state.cc.s = (0x80 == (x & 0x80)) ? 1 : 0;
-        state.cc.p = _parity(x, 8);
-        state.cc.cy = 0;
-        state.a = x;
+      case 0xd0: _unimplementedInstruction(); break;
+      case 0xd1: //POP D
+        state.e = state.memory[state.sp];
+        state.d = state.memory[state.sp+1];
+        state.sp += 2;
+        break;
+      case 0xd2: _unimplementedInstruction(); break;
+      case 0xd3:
         state.pc++;
         break;
-      case 0x80: //ADD B
-        int answer = state.a + state.b;
-        state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
-        state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
-        state.cc.cy = (answer > 0xff) ? 1 : 0;
-        state.cc.p = _parity(answer & 0xff,8);
-        state.a = answer & 0xff;
+      case 0xd4: _unimplementedInstruction(); break;
+      case 0xd5: //PUSH D
+        state.memory[state.sp-1] = state.d;
+        state.memory[state.sp-2] = state.e;
+        state.sp -= 2;
         break;
-      case 0x81: //ADD C
-        int answer = state.a + state.c;
-        state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
-        state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
-        state.cc.cy = (answer > 0xff) ? 1 : 0;
-        state.cc.p = _parity(answer & 0xff,8);
-        state.a = answer & 0xff;
+      case 0xd6: _unimplementedInstruction(); break;
+      case 0xd7: _unimplementedInstruction(); break;
+      case 0xd8: _unimplementedInstruction(); break;
+      case 0xd9: _unimplementedInstruction(); break;
+      case 0xda: _unimplementedInstruction(); break;
+      case 0xdb: _unimplementedInstruction(); break;
+      case 0xdc: _unimplementedInstruction(); break;
+      case 0xdd: _unimplementedInstruction(); break;
+      case 0xde: _unimplementedInstruction(); break;
+      case 0xdf: _unimplementedInstruction(); break;
+      case 0xe0: _unimplementedInstruction(); break;
+      case 0xe1: //POP H
+        state.l = state.memory[state.sp];
+        state.h = state.memory[state.sp+1];
+        state.sp += 2;
         break;
-      case 0x86: //ADD M
-        int offset = (state.h<<8) | (state.l);
-        int answer = state.a + state.memory[offset];
-        state.cc.z = ((answer & 0xff) == 0) ? 1 : 0;
-        state.cc.s = ((answer & 0x80) != 0) ? 1 : 0;
-        state.cc.cy = (answer > 0xff) ? 1 : 0;
-        state.cc.p = _parity(answer & 0xff,8);
-        state.a = answer & 0xff;
+      case 0xe2: _unimplementedInstruction(); break;
+      case 0xe3: _unimplementedInstruction(); break;
+      case 0xe4: _unimplementedInstruction(); break;
+      case 0xe5: //PUSH H
+        state.memory[state.sp-1] = state.h;
+        state.memory[state.sp-2] = state.l;
+        state.sp -= 2;
         break;
+      case 0xe6: //ANI byte
+        state.a = state.a & state.memory[currentPc+1];
+        _logicFlagsA();
+        state.pc++;
+        break;
+      case 0xe7: _unimplementedInstruction(); break;
+      case 0xe8: _unimplementedInstruction(); break;
+      case 0xe9: _unimplementedInstruction(); break;
+      case 0xea: _unimplementedInstruction(); break;
+      case 0xeb: //XCHG
+        int save1 = state.d;
+        int save2 = state.e;
+        state.d = state.h;
+        state.e = state.l;
+        state.h = save1;
+        state.l = save2;
+        break;
+      case 0xec: _unimplementedInstruction(); break;
+      case 0xed: _unimplementedInstruction(); break;
+      case 0xee: _unimplementedInstruction(); break;
+      case 0xef: _unimplementedInstruction(); break;
+      case 0xf0: _unimplementedInstruction(); break;
       case 0xf1: //POP PSW
         state.a = state.memory[state.sp+1];
         int psw = state.memory[state.sp];
@@ -474,12 +502,25 @@ class CPU {
         state.cc.ac = (0x10 == (psw & 0x10)) ? 1 : 0;
         state.sp += 2;
         break;
+      case 0xf2: _unimplementedInstruction(); break;
+      case 0xf3: _unimplementedInstruction(); break;
+      case 0xf4: _unimplementedInstruction(); break;
       case 0xf5: //PUSH PSW
         state.memory[state.sp-1] = state.a;
         int psw = (state.cc.z | state.cc.s << 1 | state.cc.p << 2 | state.cc.cy << 3 | state.cc.ac << 4);
         state.memory[state.sp-2] = psw;
         state.sp = state.sp - 2;
         break;
+      case 0xf6: _unimplementedInstruction(); break;
+      case 0xf7: _unimplementedInstruction(); break;
+      case 0xf8: _unimplementedInstruction(); break;
+      case 0xf9: _unimplementedInstruction(); break;
+      case 0xfa: _unimplementedInstruction(); break;
+      case 0xfb: //EI
+        state.intEnable = 1;
+        break;
+      case 0xfc: _unimplementedInstruction(); break;
+      case 0xfd: _unimplementedInstruction(); break;
       case 0xfe: //CPI byte
         int x = state.a - state.memory[currentPc+1];
         state.cc.z = (x == 0) ? 1 : 0;
@@ -488,6 +529,7 @@ class CPU {
         state.cc.cy = (state.a < state.memory[currentPc+1]) ? 1 : 0;
         state.pc++;
         break;
+      case 0xff: _unimplementedInstruction(); break;
     }
 
     return 0;
