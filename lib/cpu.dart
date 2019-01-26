@@ -55,7 +55,6 @@ class CPU {
     exit(1);
   }
 
-  //TODO: INX op will probably need a fix
   int emulate8080Op() {
     int opcode = state.memory[state.pc];
     int currentPc = state.pc;
@@ -122,7 +121,8 @@ class CPU {
       case 0x12: _unimplementedInstruction(); break;
       case 0x13: //INX D
         state.e++;
-        if(state.e == 0) {
+        if(state.e > 255) {
+          state.e = 0;
           state.d++;
         }
         break;
@@ -161,7 +161,8 @@ class CPU {
       case 0x22: _unimplementedInstruction(); break;
       case 0x23: //INX H
         state.l++;
-        if(state.l == 0) {
+        if(state.l > 255) {
+          state.l = 0;
           state.h++;
         }
         break;
