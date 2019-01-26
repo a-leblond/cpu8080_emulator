@@ -120,10 +120,9 @@ class CPU {
         break;
       case 0x12: _unimplementedInstruction(); break;
       case 0x13: //INX D
-        state.e++;
+        state.e = (state.e + 1).toUnsigned(8);
         if(state.e > 255) {
-          state.e = 0;
-          state.d++;
+          state.d = (state.d + 1).toUnsigned(8);
         }
         break;
       case 0x14: _unimplementedInstruction(); break;
@@ -160,10 +159,9 @@ class CPU {
         break;
       case 0x22: _unimplementedInstruction(); break;
       case 0x23: //INX H
-        state.l++;
-        if(state.l > 255) {
-          state.l = 0;
-          state.h++;
+        state.l = (state.l + 1).toUnsigned(8);
+        if(state.l == 0) {
+          state.h = (state.h + 1).toUnsigned(8);
         }
         break;
       case 0x24: //INR H
