@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-class State {
+class StateMemory {
 
   int a;
   int b;
