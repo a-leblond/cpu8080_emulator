@@ -12,8 +12,6 @@ class CPU {
     state = s;
   }
 
-
-
   int _parity(int x, int size) {
     int i;
     int p = 0;
@@ -38,6 +36,36 @@ class CPU {
     state.cc.z = ((res&0xff) == 0) ? 1 : 0;
     state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
     state.cc.p = _parity(res&0xff, 8);
+  }
+
+  void _generateInterrupt(int interruptNum) {
+    _push((state.pc & 0xff00) >> 8, (state.pc & 0xff));
+    state.pc = 8 * interruptNum;
+    state.intEnable = 0;
+  }
+
+  void _push(int high, int low) {
+    _writeMem(state.sp-1, high);
+    _writeMem(state.sp-2, low);
+    state.sp = state.sp - 2;
+  }
+
+  void _pop(int high, int low) {
+    low = state.memory[state.sp];
+    high = state.memory[state.sp+1];
+    state.sp += 2;
+  }
+
+  void _writeMem(int address, int value){
+    if (address < 0x2000) {
+      //        print("Writing ROM not allowed %x\n", address);
+      return;
+    }
+    if (address >=0x4000) {
+      //       print("Writing out of Space Invaders RAM not allowed %x\n", address);
+      return;
+    }
+    state.memory[address] = value;
   }
 
   void readFileIntoMemoryAt(String filename, int offset) async {

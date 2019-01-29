@@ -69,10 +69,8 @@ class _EmulatorState extends State<Emulator> {
   int _machineIN(int port) {
     int a;
     switch(port) {
-      case 0:
-        return 1;
       case 1:
-        return 0;
+        return 1;
       case 3:
         int v = (shift1 << 8) | shift0;
         a = ((v >> (8-shiftOffset)) & 0xff);
