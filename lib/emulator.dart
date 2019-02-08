@@ -1,4 +1,5 @@
 library cpu8080_emulator;
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -20,6 +21,8 @@ class _EmulatorState extends State<Emulator> {
   double lastTimer;
   double nextInterrupt;
   int whichInterrupt;
+
+  Timer emulatorTimer;
 
   int shift0; //LSB of Space Invader's external shift hardware
   int shift1; //MSB
@@ -89,6 +92,11 @@ class _EmulatorState extends State<Emulator> {
         shift1 = value;
     }
   }
+
+  void _startEmulation() {
+    emulatorTimer = new Timer.periodic(new Duration(milliseconds: 1), (Timer t) => _runCPU());
+  }
+
 
   @override
   void initState() {
