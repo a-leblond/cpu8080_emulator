@@ -108,7 +108,6 @@ class CPU {
   int emulate8080Op() {
     int opcode = state.memory[state.pc];
     int currentPc = state.pc;
-    print(opcode.toRadixString(16));
 
     state.pc += 1;
 
@@ -123,7 +122,7 @@ class CPU {
       case 0x03: _unimplementedInstruction(); break;
       case 0x04: _unimplementedInstruction(); break;
       case 0x05: //DCR B
-        int res = state.b - 1;
+        int res = state.b.toUnsigned(8) - 1;
         state.cc.z = (res == 0) ? 1 : 0;
         state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
         state.cc.p = _parity(res, 8);
@@ -171,7 +170,7 @@ class CPU {
       case 0x12: _unimplementedInstruction(); break;
       case 0x13: //INX D
         state.e = (state.e + 1).toUnsigned(8);
-        if(state.e > 255) {
+        if(state.e == 0) {
           state.d = (state.d + 1).toUnsigned(8);
         }
         break;
@@ -580,6 +579,13 @@ class CPU {
         break;
       case 0xff: _unimplementedInstruction(); break;
     }
+
+    print("Instruction : " + opcode.toRadixString(16));
+    print("a = "+state.a.toString());
+    print("b = "+state.b.toString());
+    print("c = "+state.c.toString());
+    print("d = "+state.d.toString());
+    print("e = "+state.e.toString());
 
     return cycles8080[opcode];
   }

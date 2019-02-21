@@ -89,7 +89,7 @@ class _EmulatorState extends State<Emulator> {
       }
     }
 
-    lastTimer = now;
+    lastTimer = DateTime.now().microsecondsSinceEpoch.toDouble();
   }
 
   int _machineIN(int port) {
