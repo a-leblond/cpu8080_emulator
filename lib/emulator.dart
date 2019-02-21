@@ -18,7 +18,7 @@ class _EmulatorState extends State<Emulator> {
   StateMemory state = new StateMemory();
   CPU _cpu;
 
-  double lastTimer;
+  double lastTimer = 0.0;
   double nextInterrupt;
   int whichInterrupt;
 
@@ -44,15 +44,36 @@ class _EmulatorState extends State<Emulator> {
     await _cpu.readFileIntoMemoryAt("invaders.f", 0x1000);
     await _cpu.readFileIntoMemoryAt("invaders.e", 0x1800);
 
-    _runCPU();
+    _startEmulation();
   }
 
   void _runCPU() {
     print("RunCPU");
 
-    int done = 0;
+    double now = DateTime.now().microsecondsSinceEpoch.toDouble();
 
-    while(done == 0) {
+    if(lastTimer == 0.0) {
+      lastTimer = now;
+      nextInterrupt = lastTimer + 16000.0;
+      whichInterrupt = 1;
+    }
+
+    if((state.intEnable==1) && (now > nextInterrupt)) {
+      if(whichInterrupt == 1) {
+        _cpu.generateInterrupt(1);
+        whichInterrupt = 2;
+      } else {
+        _cpu.generateInterrupt(2);
+        whichInterrupt = 1;
+      }
+      nextInterrupt = now + 8000.0;
+    }
+
+    double sinceLast = now - lastTimer;
+    int cyclesToCatchUp = 2 * sinceLast.toInt();
+    int cycles = 0;
+
+    while(cyclesToCatchUp > cycles) {
       int opcode = state.memory[state.pc];
 
       if(opcode == 0xdb) { //Machine specific handling for IN
@@ -64,9 +85,11 @@ class _EmulatorState extends State<Emulator> {
         _machineOUT(port,state.a);
         state.pc++;
       } else {
-        done = _cpu.emulate8080Op();
+        cycles += _cpu.emulate8080Op();
       }
     }
+
+    lastTimer = now;
   }
 
   int _machineIN(int port) {
