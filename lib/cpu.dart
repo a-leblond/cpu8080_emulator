@@ -146,7 +146,7 @@ class CPU {
       case 0x0b: _unimplementedInstruction(); break;
       case 0x0c: _unimplementedInstruction(); break;
       case 0x0d: //DCR C
-        int res = state.c - 1;
+        int res = state.c.toUnsigned(8) - 1;
         state.cc.z = (res == 0) ? 1 : 0;
         state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
         state.cc.p = _parity(res, 8);
@@ -214,7 +214,7 @@ class CPU {
         }
         break;
       case 0x24: //INR H
-        int res = state.h + 1;
+        int res = state.h.toUnsigned(8) + 1;
         state.cc.z = (res == 0) ? 1 : 0;
         state.cc.s = (0x80 == (res & 0x80)) ? 1 : 0;
         state.cc.p = _parity(res, 8);
@@ -570,7 +570,7 @@ class CPU {
       case 0xfc: _unimplementedInstruction(); break;
       case 0xfd: _unimplementedInstruction(); break;
       case 0xfe: //CPI byte
-        int x = state.a - state.memory[currentPc+1];
+        int x = state.a.toUnsigned(8) - state.memory[currentPc+1];
         state.cc.z = (x == 0) ? 1 : 0;
         state.cc.s = (0x80 == (x & 0x80)) ? 1 : 0;
         state.cc.p = _parity(x, 8);
